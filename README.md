@@ -19,7 +19,7 @@ Add the following dependency to your Maven `pom.xml`:
 <dependency>
     <groupId>com.github.walker84837</groupId>
     <artifactId>JResult</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
