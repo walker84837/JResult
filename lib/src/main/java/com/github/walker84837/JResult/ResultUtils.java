@@ -1,4 +1,4 @@
-package com.github.walker84837;
+package com.github.walker84837.JResult;
 
 import java.util.concurrent.Callable;
 

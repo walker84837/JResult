@@ -1,4 +1,4 @@
-package com.github.walker84837;
+package com.github.walker84837.JResult;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -22,6 +22,12 @@ public abstract class Result<T, E> {
     public abstract void ifOk(Consumer<T> action);
     public abstract void ifErr(Consumer<E> action);
 
+    /**
+     * Maps the value of the Ok variant of the Result.
+     * 
+     * @param mapper The function to map the value with.
+     * @return A new Result with the mapped value.
+     */
     public <U> Result<U, E> map(Function<T, U> mapper) {
         if (this instanceof Ok<T, E> ok) {
             return Result.ok(mapper.apply(ok.value));
