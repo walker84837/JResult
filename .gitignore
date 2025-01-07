@@ -36,5 +36,5 @@ lib/bin/
 **/.project
 **/.settings/
 
-# Metals cache
+# Metals workspace files
 **/.metals/
