@@ -102,10 +102,6 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
         return new Err<>(error);
     }
 
-    // -------------------------
-    // Additional combinators
-    // -------------------------
-
     /**
      * Returns the provided result if this is Ok, otherwise returns this Err.
      *
@@ -183,10 +179,6 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
         }
     }
 
-    // -------------------------
-    // Inspection and predicate methods
-    // -------------------------
-
     /**
      * Runs the provided consumer on the success value if this is Ok.
      *
@@ -232,10 +224,6 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
     public boolean isErrAnd(Predicate<E> predicate) {
         return isErr() && predicate.test(unwrapErr());
     }
-
-    // -------------------------
-    // Unwrapping with custom messages
-    // -------------------------
 
     /**
      * Unwraps the success value if present, or throws an IllegalStateException with the given message.
@@ -284,16 +272,12 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
      * @return a flattened Result if possible; otherwise, this Result.
      */
     @SuppressWarnings("unchecked")
-    public Result<T, E> flatten() {
-        if (isOk() && unwrap() instanceof Result<?, ?> nested) {
-            return (Result<T, E>) nested;
+    public <U> Result<U, E> flatten() {
+        if (isOk() && unwrap() instanceof Result<?, ?>) {
+            return (Result<U, E>) unwrap();
         }
-        return this;
+        return (Result<U, E>) this;
     }
-
-    // -------------------------
-    // Conversion methods
-    // -------------------------
 
     /**
      * Converts this Result to an Optional containing the success value if present.
@@ -313,18 +297,10 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
         return isErr() ? Optional.of(unwrapErr()) : Optional.empty();
     }
 
-    // -------------------------
-    // Helper for type casting of error results
-    // -------------------------
-
     @SuppressWarnings("unchecked")
     private <U> Result<U, E> castError() {
         return (Result<U, E>) this;
     }
-
-    // -------------------------
-    // Overridden Object methods
-    // -------------------------
 
     @Override
     public abstract boolean equals(Object obj);
@@ -334,10 +310,6 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
 
     @Override
     public abstract String toString();
-
-    // ===================================================
-    // Permitted Subclass: Ok
-    // ===================================================
 
     /**
      * Represents a successful Result.
@@ -414,10 +386,6 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
             return "Ok(" + value + ")";
         }
     }
-
-    // ===================================================
-    // Permitted Subclass: Err
-    // ===================================================
 
     /**
      * Represents an erroneous Result.
