@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"com.github.walker84837.JResult","l":"Result.Err"},{"p":"com.github.walker84837.JResult","l":"Result.Ok"},{"p":"com.github.walker84837.JResult","l":"Result"},{"p":"com.github.walker84837.JResult","l":"ResultUtils"}];updateSearchResults();
