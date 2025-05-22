@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * JResult - A Result type that represents either a success (Ok) or a failure (Err).
@@ -100,6 +101,33 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
      */
     public static <T, E> Result<T, E> err(E error) {
         return new Err<>(error);
+    }
+
+    /**
+     * Converts this Result to a Stream containing the success value if present.
+     *
+     * @return a one‐element Stream with the success value, or an empty Stream if this is Err.
+     */
+    public Stream<T> toStream() {
+        return isOk()
+            ? Stream.of(unwrap())
+            : Stream.empty();
+    }
+
+    /**
+     * Applies either onOk or onErr, depending on whether this Result is Ok or Err.
+     *
+     * @param onOk   function to transform the success value (type T → R) if this is Ok.
+     * @param onErr  function to transform the error value (type E → R) if this is Err.
+     * @param <R>    the result type of the fold operation.
+     * @return       the value returned by onOk.apply(unwrappedSuccess) or onErr.apply(unwrappedError).
+     */
+    public <R> R fold(Function<T, R> onOk, Function<E, R> onErr) {
+        if (isOk()) {
+            return onOk.apply(unwrap());
+        } else {
+            return onErr.apply(unwrapErr());
+        }
     }
 
     /**
