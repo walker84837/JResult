@@ -249,4 +249,6 @@ Feel free to submit pull requests or issues on the [GitHub repository](https://g
 
 ## License
 
-This library is distributed under the LGPL. See the [LICENSE](LICENSE) file for details.
+This library is dual-licensed under the [MIT License](https://opensource.org/licenses/MIT) and the [GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.html) (LGPLv3).
+
+You may choose to use, distribute, or modify this code under the terms of either license.
