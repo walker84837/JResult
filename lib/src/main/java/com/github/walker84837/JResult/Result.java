@@ -213,15 +213,6 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
     }
 
     /**
-     * Converts this Result to an Optional containing the success value if present.
-     *
-     * @return an Optional containing the success value if this is Ok; otherwise, an empty Optional.
-     */
-    public Optional<T> toOptional() {
-        return isOk() ? Optional.of(unwrap()) : Optional.empty();
-    }
-
-    /**
      * Returns the provided result if this is Ok, otherwise returns this Err.
      *
      * @param other the alternative result.
