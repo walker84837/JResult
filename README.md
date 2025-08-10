@@ -25,7 +25,7 @@
 - Safe unwrapping with fallback values or custom error handling
 - Flexible mapping and chaining of success and error transformations
 - Utility functions for handling try-catch scenarios
-- Seamless integration with Java 21 features
+- Seamless integration with Java 17+ features
 
 ## Documentation
 
@@ -111,6 +111,11 @@ var processed = response
 
 processed.ifOk(data -> System.out.println("Received data: " + data));
 processed.ifErr(err -> System.err.println("Error: " + err));
+// or...
+processed.match(
+    data -> System.out.println("Received data: " + data),
+    err -> System.err.println("Error: " + err)
+);
 ```
 
 ### Database operations
@@ -166,9 +171,14 @@ var finalResult = Result.ok("input.txt")
 ```java
 import com.github.walker84837.JResult.Result;
 
-enum AppError { FILE_NOT_FOUND, PERMISSION_DENIED, NETWORK_ERROR }
+enum AppError {
+    FILE_NOT_FOUND,
+    PERMISSION_DENIED,
+    NETWORK_ERROR
+}
 
 var operation = Result.ok("data.json")
+    // Java 21+ - switch expressions with pattern matching
     .mapErr(e -> switch (e) {
         case FileNotFoundException _ -> AppError.FILE_NOT_FOUND;
         case SecurityException _ -> AppError.PERMISSION_DENIED;

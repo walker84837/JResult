@@ -104,6 +104,73 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
     }
 
     /**
+     * Converts an Optional to a Result, producing an Ok if the Optional has a value,
+     * or an Err with the value from the errorSupplier if empty.
+     *
+     * @param optional       the Optional to convert.
+     * @param errorSupplier  supplies the error value when the Optional is empty.
+     * @param <T>            the type of the success value.
+     * @param <E>            the type of the error value.
+     * @return a Result representing the Optional's value or the supplied error.
+     */
+    public static <T, E> Result<T, E> fromOptional(
+        Optional<T> optional,
+        Supplier<E> errorSupplier
+    ) {
+        return optional.map(Result::<T, E>ok)
+            .orElseGet(() -> Result.err(errorSupplier.get()));
+    }
+
+    /**
+     * Converts an Optional to a Result with a String error.
+     *
+     * @param optional      the Optional to convert.
+     * @param errorMessage  the error message if the Optional is empty.
+     * @param <T>           the type of the success value.
+     * @return a Result with Ok if the Optional has a value, or Err(errorMessage) if empty.
+     */
+    public static <T> Result<T, String> fromOptional(
+        Optional<T> optional,
+        String errorMessage
+    ) {
+        return fromOptional(optional, () -> errorMessage);
+    }
+
+    /**
+     * Converts an Optional to a Result with an exception as the error.
+     *
+     * @param optional           the Optional to convert.
+     * @param exceptionSupplier  supplies the exception when the Optional is empty.
+     * @param <T>                the type of the success value.
+     * @param <E>                the type of the exception (must extend Throwable).
+     * @return a Result with Ok if the Optional has a value, or Err(exception) if empty.
+     */
+    public static <T, E extends Throwable> Result<T, E> fromOptionalWithException(
+        Optional<T> optional,
+        Supplier<E> exceptionSupplier
+    ) {
+        return fromOptional(optional, exceptionSupplier);
+    }
+
+    /**
+     * Converts an Optional to a Result with an exception as the error,
+     * using the provided message and factory function to create the exception.
+     *
+     * @param optional           the Optional to convert.
+     * @param message            the message for the exception if the Optional is empty.
+     * @param exceptionFactory   creates an exception from the given message.
+     * @param <T>                the type of the success value.
+     * @param <E>                the type of the exception (must extend Throwable).
+     * @return a Result with Ok if the Optional has a value, or Err(exception) if empty.
+     */
+    public static <T, E extends Throwable> Result<T, E> fromOptionalException(
+            Optional<T> optional,
+            String message,
+            Function<String, E> exceptionFactory) {
+        return fromOptional(optional, () -> exceptionFactory.apply(message));
+    }
+
+    /**
      * Converts this Result to a Stream containing the success value if present.
      *
      * @return a one‐element Stream with the success value, or an empty Stream if this is Err.
@@ -128,6 +195,30 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
         } else {
             return onErr.apply(unwrapErr());
         }
+    }
+
+    /**
+     * Executes the given action if this is an Ok variant, or the other action if this is an Err variant.
+     * This method performs side effects and does not return a value.
+     *
+     * @param onOk  the action to perform on the success value.
+     * @param onErr the action to perform on the error value.
+     */
+     public void match(Consumer<T> onOk, Consumer<E> onErr) {
+        if (isOk()) {
+            onOk.accept(unwrap());
+        } else {
+            onErr.accept(unwrapErr());
+        }
+    }
+
+    /**
+     * Converts this Result to an Optional containing the success value if present.
+     *
+     * @return an Optional containing the success value if this is Ok; otherwise, an empty Optional.
+     */
+    public Optional<T> toOptional() {
+        return isOk() ? Optional.of(unwrap()) : Optional.empty();
     }
 
     /**
