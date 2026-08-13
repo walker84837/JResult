@@ -1,4 +1,4 @@
-package com.github.walker84837.JResult;
+package org.winlogon.jresult;
 
 import org.junit.jupiter.api.Test;
 

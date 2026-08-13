@@ -1,4 +1,4 @@
-package com.github.walker84837.JResult;
+package org.winlogon.jresult;
 
 import java.util.Objects;
 import java.util.Optional;
