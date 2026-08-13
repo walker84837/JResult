@@ -36,7 +36,7 @@ The documentation is hosted at <https://walker84837.github.io/JResult>.
 ### Basic usage
 
 ```java
-import com.github.walker84837.JResult.Result;
+import org.winlogon.jresult.Result;
 
 var success = Result.ok(42);
 var error = Result.err("Something went wrong");
@@ -62,11 +62,11 @@ var fallback = error.unwrapOrElse(err -> {
 ```java
 import java.nio.file.Files;
 import java.nio.file.Path;
-import com.github.walker84837.JResult.ResultUtils;
+import org.winlogon.jresult.Result;
 
 var filePath = Path.of("example.txt");
 
-var fileContent = ResultUtils.tryCatch(() -> Files.readString(filePath));
+var fileContent = Result.attempt(() -> Files.readString(filePath));
 
 var processed = fileContent
     .map(content -> content.toUpperCase())
@@ -74,7 +74,7 @@ var processed = fileContent
     .mapErr(e -> "Failed to read file: " + e.getMessage());
 
 var writeResult = processed.andThen(content -> 
-    ResultUtils.tryCatch(() -> {
+    Result.attempt(() -> {
         Files.writeString(filePath, content);
         return "File written successfully";
     }, e -> "Write error: " + e.getMessage()));
@@ -89,14 +89,14 @@ writeResult.ifErr(msg -> System.err.println(msg));
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import com.github.walker84837.JResult.ResultUtils;
+import org.winlogon.jresult.Result;
 
 var client = HttpClient.newHttpClient();
 var request = HttpRequest.newBuilder()
     .uri(URI.create("https://api.example.com/data"))
     .build();
 
-var response = ResultUtils.tryCatch(() -> 
+var response = Result.attempt(() ->
     client.send(request, HttpResponse.BodyHandlers.ofString()),
     e -> "HTTP request failed: " + e.getMessage());
 
@@ -122,13 +122,13 @@ processed.match(
 
 ```java
 import java.sql.*;
-import com.github.walker84837.JResult.ResultUtils;
+import org.winlogon.jresult.Result;
 
 record User(int id, String name) {}
 
 var dbUrl = "jdbc:postgresql://localhost/mydb";
 
-var userResult = ResultUtils.tryCatch(() -> {
+var userResult = Result.attempt(() -> {
     try (var conn = DriverManager.getConnection(dbUrl, "user", "pass");
          var stmt = conn.prepareStatement("SELECT * FROM users WHERE id = ?")) {
         stmt.setInt(1, 42);
@@ -150,7 +150,7 @@ System.out.println(greeting);
 ### Chaining operations
 
 ```java
-import com.github.walker84837.JResult.Result;
+import org.winlogon.jresult.Result;
 
 var result = Result.ok(5)
     .map(x -> x * 2) // 10
@@ -160,7 +160,7 @@ var result = Result.ok(5)
 
 // Complex pipeline
 var finalResult = Result.ok("input.txt")
-    .andThen(filename -> ResultUtils.tryCatch(() -> Files.readString(Path.of(filename))))
+    .andThen(filename -> Result.attempt(() -> Files.readString(Path.of(filename))))
     .map(content -> content.split("\\s+").length)
     .map(count -> "Word count: " + count)
     .unwrapOr("Could not count words");
@@ -169,7 +169,7 @@ var finalResult = Result.ok("input.txt")
 ### Advanced error handling
 
 ```java
-import com.github.walker84837.JResult.Result;
+import org.winlogon.jresult.Result;
 
 enum AppError {
     FILE_NOT_FOUND,
@@ -191,6 +191,39 @@ var operation = Result.ok("data.json")
         return Result.ok(getDefaultData());
     });
 ```
+
+### Wrapping exceptions with `Result.attempt`
+
+`Result.attempt` replaces the old `ResultUtils` class and lives directly on `Result`.
+It runs code that may throw and wraps the outcome in a `Result`.
+
+```java
+import org.winlogon.jresult.Result;
+
+// Catch any Exception (error type is Exception)
+Result<String, Exception> read = Result.attempt(() -> Files.readString(path));
+
+// Map the error into your own error type
+Result<String, String> read2 = Result.attempt(
+    () -> Files.readString(path),
+    e -> "Read failed: " + e.getMessage()
+);
+
+// Side-effecting operations (no return value) use the Runnable overload
+Result<Void, String> write = Result.attempt(
+    () -> Files.writeString(path, content),
+    e -> "Write failed: " + e.getMessage()
+);
+
+// Narrow the caught exception to a specific type, keeping it strongly typed
+Result<Integer, NumberFormatException> parsed = Result.attempt(
+    NumberFormatException.class,      // only this exception is caught
+    () -> Integer.parseInt("42")      // supplier may only throw NumberFormatException
+);
+```
+
+> Any exception not of the declared type is rethrown wrapped in a
+> `RuntimeException`, since the supplier is not allowed to throw it.
 
 ### Real-world validation example
 
@@ -245,13 +278,13 @@ var userResult = validateInput("Alice", "alice@example.com", 25)
    };
    ```
 
-4. **Use `ResultUtils.tryCatch` for exception-heavy code**:
-   ```java
-   var data = ResultUtils.tryCatch(
-       () -> parseJson(fetchFromNetwork()),
-       e -> "Failed: " + e.getMessage()
-   );
-   ```
+ 4. **Use `Result.attempt` for exception-heavy code**:
+    ```java
+    var data = Result.attempt(
+        () -> parseJson(fetchFromNetwork()),
+        e -> "Failed: " + e.getMessage()
+    );
+    ```
 
 ## Contributing
 

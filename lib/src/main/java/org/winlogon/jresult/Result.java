@@ -2,6 +2,7 @@ package org.winlogon.jresult;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -168,6 +169,114 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
             String message,
             Function<String, E> exceptionFactory) {
         return fromOptional(optional, () -> exceptionFactory.apply(message));
+    }
+
+    /**
+     * Runs the given Callable and wraps the result in an {@code Ok}, or catches any
+     * Exception and returns an {@code Err} carrying that Exception.
+     *
+     * @param callable the Callable to execute.
+     * @param <T>      the type of the success value.
+     * @return a Result containing the success value or the caught Exception.
+     */
+    public static <T> Result<T, Exception> attempt(Callable<T> callable) {
+        return attempt(callable, Function.identity());
+    }
+
+    /**
+     * Runs the given Callable and wraps the result in an {@code Ok}, or catches any
+     * Exception and returns an {@code Err} produced by the provided error mapper.
+     *
+     * @param callable    the Callable to execute.
+     * @param errorMapper a function that converts a caught Exception into an error of type {@code E}.
+     * @param <T>         the type of the success value.
+     * @param <E>         the type of the error value.
+     * @return a Result containing the success value or a mapped error.
+     */
+    public static <T, E> Result<T, E> attempt(Callable<T> callable, Function<Exception, E> errorMapper) {
+        try {
+            return ok(callable.call());
+        } catch (Exception e) {
+            return err(errorMapper.apply(e));
+        }
+    }
+
+    /**
+     * Runs the given Runnable and returns an {@code Ok} carrying {@code null} on success,
+     * or catches any Exception and returns an {@code Err} carrying that Exception.
+     * <p>
+     * Useful for side-effecting operations (e.g. writing a file) that produce no value.
+     *
+     * @param runnable the Runnable to execute.
+     * @return a Result indicating success ({@code Ok(null)}) or the caught Exception.
+     */
+    public static Result<Void, Exception> attempt(Runnable runnable) {
+        return attempt(runnable, Function.identity());
+    }
+
+    /**
+     * Runs the given Runnable and returns an {@code Ok} carrying {@code null} on success,
+     * or catches any Exception and returns an {@code Err} produced by the error mapper.
+     *
+     * @param runnable    the Runnable to execute.
+     * @param errorMapper a function that converts a caught Exception into an error of type {@code E}.
+     * @param <E>         the type of the error value.
+     * @return a Result indicating success ({@code Ok(null)}) or a mapped error.
+     */
+    public static <E> Result<Void, E> attempt(Runnable runnable, Function<Exception, E> errorMapper) {
+        try {
+            runnable.run();
+            return ok(null);
+        } catch (Exception e) {
+            return err(errorMapper.apply(e));
+        }
+    }
+
+    /**
+     * Runs the given supplier and wraps the result in an {@code Ok}, catching only exceptions
+     * of the given type {@code X}. Any other exception is rethrown wrapped in a
+     * {@link RuntimeException}, since the supplier only declares {@code X}.
+     *
+     * @param exceptionType the class of the exception to catch.
+     * @param supplier      the supplier to execute, throwing only {@code X}.
+     * @param <T>           the type of the success value.
+     * @param <X>           the type of the exception to catch.
+     * @return a Result containing the success value or the caught exception of type {@code X}.
+     */
+    public static <T, X extends Exception> Result<T, X> attempt(
+            Class<X> exceptionType,
+            ThrowingSupplier<X, T> supplier) {
+        return attempt(exceptionType, supplier, Function.identity());
+    }
+
+    /**
+     * Runs the given supplier and wraps the result in an {@code Ok}, catching only exceptions
+     * of the given type {@code X} and mapping them with the error mapper. Any other exception
+     * is rethrown wrapped in a {@link RuntimeException}.
+     *
+     * @param exceptionType the class of the exception to catch.
+     * @param supplier      the supplier to execute, throwing only {@code X}.
+     * @param errorMapper   a function that converts the caught exception into an error of type {@code E}.
+     * @param <T>           the type of the success value.
+     * @param <X>           the type of the exception to catch.
+     * @param <E>           the type of the error value.
+     * @return a Result containing the success value or a mapped error.
+     */
+    public static <T, X extends Exception, E> Result<T, E> attempt(
+            Class<X> exceptionType,
+            ThrowingSupplier<X, T> supplier,
+            Function<X, E> errorMapper) {
+        try {
+            return ok(supplier.get());
+        } catch (Exception e) {
+            if (exceptionType.isInstance(e)) {
+                @SuppressWarnings("unchecked")
+                X typed = (X) e;
+                return err(errorMapper.apply(typed));
+            }
+            // Unexpected exception: the supplier only declared X, so this is a bug.
+            throw new RuntimeException(e);
+        }
     }
 
     /**

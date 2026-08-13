@@ -8,16 +8,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ResultTest {
     @Test
-    public void testTryCatchSuccess() {
-        Result<Integer, Exception> result = ResultUtils.tryCatch(() -> 42);
+    public void testAttemptSuccess() {
+        Result<Integer, Exception> result = Result.attempt(() -> 42);
         assertTrue(result.isOk(), "Expected an Ok result");
         assertEquals(42, result.unwrap(), "Ok value should match the returned value");
     }
 
     @Test
-    public void testTryCatchFailure() {
+    public void testAttemptFailure() {
         Exception testEx = new IllegalArgumentException("bad call");
-        Result<Integer, Exception> result = ResultUtils.tryCatch(() -> {
+        Result<Integer, Exception> result = Result.attempt(() -> {
             throw testEx;
         });
         assertTrue(result.isErr(), "Expected an Err result");
@@ -26,13 +26,60 @@ public class ResultTest {
     }
 
     @Test
-    public void testTryCatchCustomErrorMapper() {
+    public void testAttemptCustomErrorMapper() {
         // Using the overload that allows a custom error mapper.
-        Result<Integer, String> result = ResultUtils.tryCatch(() -> {
+        Result<Integer, String> result = Result.attempt(() -> {
             throw new RuntimeException("custom error");
         }, ex -> "Mapped: " + ex.getMessage());
         assertTrue(result.isErr(), "Expected an Err result");
         assertEquals("Mapped: custom error", result.unwrapErr(), "Error message should be mapped");
+    }
+
+    @Test
+    public void testAttemptRunnableSuccess() {
+        final boolean[] ran = {false};
+        Result<Void, Exception> result = Result.attempt(() -> { ran[0] = true; });
+        assertTrue(result.isOk(), "Expected an Ok result");
+        assertTrue(ran[0], "Runnable should have been executed");
+        assertNull(result.unwrap(), "Ok value of a Runnable attempt is null");
+    }
+
+    @Test
+    public void testAttemptRunnableFailure() {
+        Result<Void, String> result = Result.attempt(() -> {
+            throw new RuntimeException("boom");
+        }, ex -> "Mapped: " + ex.getMessage());
+        assertTrue(result.isErr(), "Expected an Err result");
+        assertEquals("Mapped: boom", result.unwrapErr(), "Error message should be mapped");
+    }
+
+    @Test
+    public void testAttemptNarrowedException() {
+        Result<Integer, NumberFormatException> result = Result.attempt(
+            NumberFormatException.class,
+            () -> Integer.parseInt("not-a-number"));
+        assertTrue(result.isErr(), "Expected an Err result");
+        assertEquals(NumberFormatException.class, result.unwrapErr().getClass(),
+            "Caught exception should keep its specific type");
+    }
+
+    @Test
+    public void testAttemptNarrowedExceptionMapped() {
+        Result<Integer, String> result = Result.attempt(
+            NumberFormatException.class,
+            () -> Integer.parseInt("not-a-number"),
+            ex -> "Bad number: " + ex.getMessage());
+        assertTrue(result.isErr(), "Expected an Err result");
+        assertEquals("Bad number: For input string: \"not-a-number\"", result.unwrapErr());
+    }
+
+    @Test
+    public void testAttemptNarrowedExceptionSuccess() {
+        Result<Integer, NumberFormatException> result = Result.attempt(
+            NumberFormatException.class,
+            () -> Integer.parseInt("42"));
+        assertTrue(result.isOk(), "Expected an Ok result");
+        assertEquals(42, result.unwrap());
     }
 
     @Test
