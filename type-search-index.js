@@ -1,1 +1,1 @@
-typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"org.winlogon.jresult","l":"Result.Err"},{"p":"org.winlogon.jresult","l":"Result.Ok"},{"p":"org.winlogon.jresult","l":"Result"},{"p":"org.winlogon.jresult","l":"ResultUtils"}];updateSearchResults();
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"org.winlogon.jresult","l":"Result.Err"},{"p":"org.winlogon.jresult","l":"Result.Ok"},{"p":"org.winlogon.jresult","l":"Result"},{"p":"org.winlogon.jresult","l":"ThrowingSupplier"}];updateSearchResults();
