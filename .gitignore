@@ -38,3 +38,7 @@ lib/bin/
 
 # Metals workspace files
 **/.metals/
+
+# IntelliJ IDEA & ktlsp caches
+.idea/
+.kls/
