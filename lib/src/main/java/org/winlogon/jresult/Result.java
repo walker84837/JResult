@@ -480,7 +480,7 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
      * @param defaultSupplier a supplier providing a default success value.
      * @return the success value or a default.
      */
-    public T unwrapOrDefault(Supplier<T> defaultSupplier) {
+    public T unwrapOrElse(Supplier<T> defaultSupplier) {
         return isOk() ? unwrap() : defaultSupplier.get();
     }
 
@@ -503,7 +503,7 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
      *
      * @return an Optional with the success value, or empty if this is Err.
      */
-    public Optional<T> ok() {
+    public Optional<T> valueOpt() {
         return isOk() ? Optional.of(unwrap()) : Optional.empty();
     }
 
@@ -512,7 +512,7 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
      *
      * @return an Optional with the error value, or empty if this is Ok.
      */
-    public Optional<E> err() {
+    public Optional<E> errorOpt() {
         return isErr() ? Optional.of(unwrapErr()) : Optional.empty();
     }
 
@@ -540,11 +540,11 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
         private final T value;
 
         /**
-         * Constructs an Ok with the given value.
+         * Constructs an Ok with the given value. Private: use {@link Result#ok(Object)}.
          *
          * @param value the success value.
          */
-        public Ok(T value) {
+        private Ok(T value) {
             this.value = value;
         }
 
@@ -616,11 +616,11 @@ public sealed abstract class Result<T, E> permits Result.Ok, Result.Err {
         private final E error;
 
         /**
-         * Constructs an Err with the given error.
+         * Constructs an Err with the given error. Private: use {@link Result#err(Object)}.
          *
          * @param error the error value.
          */
-        public Err(E error) {
+        private Err(E error) {
             this.error = error;
         }
 

@@ -223,10 +223,10 @@ public class ResultTest {
     @Test
     public void testUnwrapOrDefault() {
         Result<Integer, Exception> okResult = Result.ok(123);
-        assertEquals(123, okResult.unwrapOrDefault(() -> 0));
+        assertEquals(123, okResult.unwrapOrElse(() -> 0));
 
         Result<Integer, Exception> errorResult = Result.err(new Exception("error"));
-        assertEquals(0, errorResult.unwrapOrDefault(() -> 0));
+        assertEquals(0, errorResult.unwrapOrElse(() -> 0));
     }
 
     @Test
@@ -253,16 +253,29 @@ public class ResultTest {
     @Test
     public void testOptionalConversions() {
         Result<Integer, Exception> okResult = Result.ok(777);
-        Optional<Integer> optional = okResult.ok();
+        Optional<Integer> optional = okResult.valueOpt();
         assertTrue(optional.isPresent());
         assertEquals(777, optional.get());
 
         Result<Integer, Exception> errorResult = Result.err(new Exception("missing"));
-        Optional<Integer> optionalErr = errorResult.ok();
+        Optional<Integer> optionalErr = errorResult.valueOpt();
         assertFalse(optionalErr.isPresent());
 
-        Optional<Exception> errOpt = errorResult.err();
+        Optional<Exception> errOpt = errorResult.errorOpt();
         assertTrue(errOpt.isPresent());
         assertEquals("missing", errOpt.get().getMessage());
+    }
+
+    @Test
+    public void testFromOptionalWithException() {
+        // Present Optional yields Ok, with the error type constrained to Throwable.
+        var okResult = Result.fromOptionalWithException(Optional.of("present"), IllegalStateException::new);
+        assertTrue(okResult.isOk());
+        assertEquals("present", okResult.unwrap());
+
+        // Empty Optional yields Err carrying the Throwable produced by the supplier.
+        var errorResult = Result.fromOptionalWithException(Optional.empty(), IllegalStateException::new);
+        assertTrue(errorResult.isErr());
+        assertEquals(IllegalStateException.class, errorResult.unwrapErr().getClass());
     }
 }
