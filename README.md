@@ -2,7 +2,25 @@
 
 [![Build and Test](https://github.com/walker84837/JResult/actions/workflows/java.yml/badge.svg)](https://github.com/walker84837/JResult/actions/workflows/java.yml)
 
+[![maven](https://badges.mvnrepository.com/badge/org.winlogon/jresult/badge.svg?label=maven)](https://mvnrepository.com/artifact/org.winlogon/jresult)
+
 `JResult` is a lightweight Java library inspired by Rust's [Result<T, E>](https://doc.rust-lang.org/stable/core/result/enum.Result.html) to help eliminate the need for exception handling in scenarios where a value may either succeed or fail.
+
+Available on [Maven Central](https://central.sonatype.com/artifact/org.winlogon/jresult) (`org.winlogon:jresult`).
+
+## Installation
+
+```xml
+<dependency>
+  <groupId>org.winlogon</groupId>
+  <artifactId>jresult</artifactId>
+  <version>2.0.0</version>
+</dependency>
+```
+
+```gradle
+implementation 'org.winlogon:jresult:2.0.0'
+```
 
 ## Table of Contents
 
